@@ -49,4 +49,9 @@ None.
 Sensitive-app defaults (SEC-07): no.
 
 ## Known exceptions
-<none yet>
+- Hello has no Route/ViewModel: the screen has no state, so HelloScreen is the entry's content (TASKS hello-6 dropped).
+- Scaffold helpers a one-screen app doesn't use were deleted by the dead-code gate (state components, AppResult/AppError,
+  dispatcher binding, navigateTo). core/common, core/model, core/ui and core/data stay as empty modules because the
+  feature convention plugin and koverVerify expect them.
+- Code review (E4): skipped "Timber planted but unused" (always-on by skill decision, OBS-01) and the scaffold-template
+  root cause (skill change, recorded in the skill plan).

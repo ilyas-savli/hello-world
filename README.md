@@ -35,14 +35,11 @@ and `KEY_PASSWORD` repository secrets. Locally, export the same variables plus `
 | Module | Purpose |
 |---|---|
 | `app` | Application, MainActivity, navigation host |
-| `core/common` | `AppError`/`AppResult`, dispatcher qualifiers |
-| `core/model` | Pure Kotlin domain models |
-| `core/designsystem` | Theme, tokens, generic components |
-| `core/ui` | Shared app components (loading/empty/error states) |
+| `core/designsystem` | Theme, tokens, generic components (`HelloWorldTopAppBar`) |
 | `core/i18n` | All user-facing strings, one file per feature |
-| `core/network` | Retrofit/OkHttp, `safeApiCall` with backoff |
-| `core/testing` | Test rules and fakes |
-| `feature/*` | One module per feature |
+| `core/testing` | Test helpers (`stringResource`) |
+| `core/common`, `core/model`, `core/ui`, `core/data` | Empty for now; filled when a feature needs shared code, models, shared UI or a repository |
+| `feature/hello` | The greeting screen (start destination) |
 
 See `docs/SPEC.md` for features and `docs/audit/` for the latest code audit.
 

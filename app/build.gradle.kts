@@ -70,7 +70,6 @@ android {
 
 dependencies {
     // Only what :app itself uses; features bring their own dependencies (DEAD-03).
-    implementation(projects.core.common)
     implementation(projects.core.designsystem)
     implementation(projects.core.i18n)
     implementation(projects.feature.hello)
