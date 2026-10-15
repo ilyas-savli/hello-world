@@ -1,0 +1,186 @@
+{
+  "build_status": "full",
+  "degraded_reasons": [],
+  "project": {
+    "modules": [":app",":convention",":core:common",":core:data",":core:designsystem",":core:i18n",":core:model",":core:testing",":core:ui",":feature:hello"],
+    "manifest_paths": ["/Users/coder/Desktop/english-learn/hello-world/app/src/main/AndroidManifest.xml"],
+    "source_file_count": 28,
+    "total_loc": 943
+  },
+  "versions": {
+    "compileSdk": null,
+    "targetSdk": null,
+    "minSdk": null,
+    "agp": null,
+    "kotlin": null,
+    "gradle_wrapper": "9.8.1"
+  },
+  "deprecated_api": {
+    "files_matched": 0,
+    "total_files": 28,
+    "pct": 0.00
+  },
+  "todo_fixme": { "count": 0 },
+  "tests": {
+    "has_unit_tests": true,
+    "has_instrumented_tests": false,
+    "test_file_count": 5,
+    "main_file_count": 23,
+    "trivial_test_hits": 0
+  },
+  "ci": { "found": ["github-actions"], "gates_lint_or_test": true },
+  "security": {
+    "exported_no_permission": 1,
+    "debuggable_true": false,
+    "allow_backup_true": false,
+    "cleartext_traffic": false,
+    "network_security_config_present": true,
+    "secret_pattern_hits": 0,
+    "trust_all_tls_heuristic_hits": 0
+  },
+  "hardening_baseline": {
+    "cert_pinning_present": false,
+    "cert_pinning_hits": 0,
+    "network_security_config_pinset_present": false,
+    "encryption_at_rest_present": false,
+    "encryption_at_rest_hits": 0,
+    "encryption_at_rest_dependency_present": false,
+    "minify_enabled_heuristic": true,
+    "proguard_keep_rule_count": 2,
+    "root_tamper_detection_present": false,
+    "root_tamper_detection_hits": 0,
+    "flag_secure_hits": 0,
+    "biometric_present": false,
+    "biometric_hits": 0,
+    "signing_config_present": true,
+    "signing_plaintext_password_hits": 0,
+    "ci_dependency_scan_present": true
+  },
+  "build_health": {
+    "lint_issue_count": 0,
+    "lint_error_count": 0,
+    "suppress_count": 0,
+    "double_bang_count": 0
+  },
+  "tests_run": {
+    "total": 6, "failures": 0,
+    "errors": 0, "skipped": 0
+  },
+  "git": { "last_commit_date": "2026-10-15T20:14:43+03:00", "contributors_12mo": 1 },
+  "lint": {
+  "summary": {
+    "lint_ran": true,
+    "reports": [
+      "app/build/reports/lint-results-prodDebug.xml",
+      "core/common/build/reports/lint-results-debug.xml",
+      "core/data/build/reports/lint-results-debug.xml",
+      "core/designsystem/build/reports/lint-results-debug.xml",
+      "core/i18n/build/reports/lint-results-debug.xml",
+      "core/testing/build/reports/lint-results-debug.xml",
+      "core/ui/build/reports/lint-results-debug.xml",
+      "feature/hello/build/reports/lint-results-debug.xml"
+    ],
+    "baseline_files": [],
+    "active": {
+      "fatal": 0,
+      "errors": 0,
+      "warnings": 0,
+      "information": 0,
+      "dependency_updates": 0,
+      "security": 0
+    },
+    "baselined": {
+      "total": 0,
+      "errors_by_default_severity": 0,
+      "unknown_severity": 0,
+      "security": 0,
+      "lint_reported_errors": null,
+      "lint_reported_warnings": null
+    },
+    "by_id": {},
+    "by_module": {}
+  },
+  "issues": []
+},
+  "form_factors": {
+ "tv": {
+  "detected": false,
+  "tv_modules": [],
+  "tv_code_roots": [],
+  "ui_toolkit": [],
+  "manifests": [],
+  "application_ids": {
+   "app/build.gradle.kts": ").get()\n        versionCode = providers.gradleProperty("
+  },
+  "tv_main_source_files": 0,
+  "focus_api_usages": 0,
+  "focus_restorer_usages": 0,
+  "clickable_without_tv_component": {
+   "count": 0,
+   "samples": []
+  },
+  "phone_material3_imports_in_tv": {
+   "count": 0,
+   "samples": []
+  },
+  "key_handling_sites": {
+   "count": 0,
+   "files": []
+  },
+  "tv_test_files": 0,
+  "focus_test_files": [],
+  "focus_test_file_count": 0,
+  "media_session_present": false
+ },
+ "large_screen": {
+  "adaptive_dependency": false,
+  "window_size_class_usages": 0,
+  "navigation_suite_usages": 0,
+  "pane_scaffold_usages": 0,
+  "device_type_checks": {
+   "count": 0,
+   "samples": []
+  },
+  "orientation_locks": {
+   "count": 0,
+   "samples": []
+  },
+  "resizeable_activity_false": []
+ }
+},
+  "dead_code": {
+ "summary": {
+  "method": "heuristic-static",
+  "external_tools": {
+   "detekt": 0,
+   "android_lint_unused_resources": 0
+  },
+  "scanned": {
+   "imports": 142,
+   "declarations": 54,
+   "resources": 13,
+   "dependencies": 17
+  },
+  "counts": {
+   "unused_import": 0,
+   "unused_private_declaration": 0,
+   "unused_declaration": 0,
+   "unused_class": 0,
+   "unused_binding": 0,
+   "unused_preview": 0,
+   "test_only_declaration": 0,
+   "unused_resource": 0,
+   "unused_string": 0,
+   "unused_dependency": 0
+  },
+  "by_confidence": {},
+  "unused_declaration_pct": 0.0,
+  "unused_resource_pct": 0.0,
+  "dynamic_resource_lookup": false,
+  "dynamic_localization": false,
+  "by_module": {},
+  "truncated": false
+ },
+ "candidates": []
+}
+}
