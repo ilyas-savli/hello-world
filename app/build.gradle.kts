@@ -17,6 +17,10 @@ android {
         versionName = providers.gradleProperty("app.versionName").get()
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true // Robolectric UI tests read the app's resources
+    }
+
     buildFeatures {
         resValues = true // the stage flavor renames the app with resValue
     }
@@ -81,6 +85,7 @@ dependencies {
     // OBS-04: leak detection in debug builds only.
     debugImplementation(libs.leakcanary)
 
+    testImplementation(projects.core.testing)
     testImplementation(libs.junit4)
     testImplementation(libs.kotlin.test)
 }
