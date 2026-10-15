@@ -8,7 +8,6 @@ plugins {
 dependencies {
     api(projects.core.common)
     api(projects.core.model)
-    implementation(libs.kotlinx.coroutines.core)
     // Add implementation(projects.core.network / database / datastore) only for modules this app has (DEAD-03).
 
     testImplementation(projects.core.testing)
