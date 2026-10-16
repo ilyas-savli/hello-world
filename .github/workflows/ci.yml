@@ -1,4 +1,4 @@
-# PR gate (CI-01): build, static analysis, tests and coverage on every pull request.
+# PR gate (CI-01): build, static analysis, tests and coverage on every pull request and push to main.
 name: CI
 
 on:

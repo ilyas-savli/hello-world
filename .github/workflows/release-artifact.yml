@@ -38,3 +38,4 @@ jobs:
           name: release-aab
           path: |
             app/build/outputs/bundle/prodRelease/*.aab
+            app/build/outputs/mapping/prodRelease/mapping.txt

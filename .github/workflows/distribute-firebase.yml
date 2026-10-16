@@ -46,3 +46,11 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew :app:assembleStageRelease :app:appDistributionUploadStageRelease
+      - name: Keep the tester build and its mapping (14 days)
+        uses: actions/upload-artifact@v7
+        with:
+          name: firebase-build-${{ env.VERSION_CODE }}
+          retention-days: 14
+          path: |
+            app/build/outputs/apk/stage/release/*.apk
+            app/build/outputs/mapping/stageRelease/mapping.txt

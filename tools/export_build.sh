@@ -58,12 +58,13 @@ if [ "$BUILD_TYPE" = "release" ] && [ -z "${KEYSTORE_PATH:-}" ]; then
     KS="$HOME/.android-keystores/$NAME.jks"; mkdir -p "$(dirname "$KS")"; chmod 700 "$(dirname "$KS")"
     if [ -e "$KS" ]; then echo "$KS already exists but isn't in ~/.gradle/gradle.properties; add its properties by hand" >&2; exit 1; fi
     PASS="$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-24)"
-    keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias upload -keyalg RSA -keysize 4096 \
+    # alias "<project>-upload", not a plain word: CI masks secret values (KEY_ALIAS) in every log line
+    keytool -genkeypair -keystore "$KS" -storepass "$PASS" -keypass "$PASS" -alias "$NAME-upload" -keyalg RSA -keysize 4096 \
       -validity 10000 -dname "CN=$NAME upload key" >/dev/null 2>&1
     touch "$HOME/.gradle/gradle.properties"; chmod 600 "$HOME/.gradle/gradle.properties"
-    printf '\n# %s upload keystore (export_build.sh) — back up the .jks and these values; losing them blocks updates\n%s.keystore.path=%s\n%s.keystore.storePassword=%s\n%s.keystore.keyAlias=upload\n%s.keystore.keyPassword=%s\n' \
-      "$NAME" "$NAME" "$KS" "$NAME" "$PASS" "$NAME" "$NAME" "$PASS" >> "$HOME/.gradle/gradle.properties"
-    export KEYSTORE_PATH="$KS" KEYSTORE_PASSWORD="$PASS" KEY_ALIAS=upload KEY_PASSWORD="$PASS"
+    printf '\n# %s upload keystore (export_build.sh) — back up the .jks and these values; losing them blocks updates\n%s.keystore.path=%s\n%s.keystore.storePassword=%s\n%s.keystore.keyAlias=%s-upload\n%s.keystore.keyPassword=%s\n' \
+      "$NAME" "$NAME" "$KS" "$NAME" "$PASS" "$NAME" "$NAME" "$NAME" "$PASS" >> "$HOME/.gradle/gradle.properties"
+    export KEYSTORE_PATH="$KS" KEYSTORE_PASSWORD="$PASS" KEY_ALIAS="$NAME-upload" KEY_PASSWORD="$PASS"
     echo "signing: created $KS (passwords in ~/.gradle/gradle.properties — back both up)"
   elif [ "$KEYSTORE_MODE" = "debug" ]; then
     DEBUG_SIGN=1; echo "signing: debug key (for testing only — Play rejects debug-signed uploads)"
