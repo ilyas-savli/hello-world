@@ -1,0 +1,48 @@
+# Test builds to Firebase App Distribution (CI-05) on every push to main, or by hand.
+# Secrets: FIREBASE_SERVICE_ACCOUNT_JSON (service account with "Firebase App Distribution Admin") and the
+# KEYSTORE_* upload-key secrets — testers get the R8 build that ships, signed like a release.
+# The Firebase app id is not secret: gradle.properties firebase.stage.appId.
+name: Distribute to Firebase testers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: distribute-firebase
+  cancel-in-progress: false
+
+jobs:
+  firebase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # version.sh counts commits, release_notes.sh reads tags
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version and release notes
+        run: |
+          bash tools/ci/version.sh 0
+          bash tools/ci/release_notes.sh "$RUNNER_TEMP/release-notes.txt"
+          echo "RELEASE_NOTES_FILE=$RUNNER_TEMP/release-notes.txt" >> "$GITHUB_ENV"
+      - name: Write keystore and service account
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-sa.json"
+      - name: Build and upload to testers
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-sa.json
+          KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleStageRelease :app:appDistributionUploadStageRelease

@@ -34,5 +34,10 @@ python3 tools/check_rules.py .
 ```
 Target: ≥ 80/100 on the `mobile-codebase-audit` skill with every category ≥ 8.
 
+## Releases
+How builds are delivered is in `docs/RELEASE.md` and SPEC.md → "Distribution & CI/CD". Change channels only through the
+skill (`render_ci.py --apply-gradle --prune`), never by editing the managed workflows or the `// ci:` blocks by hand.
+APK/AAB on demand: `tools/export_build.sh --out <folder> --type apk|aab|both`.
+
 ## Git
 Conventional Commits (`feat(feature): …`). Ask the user before pushing.

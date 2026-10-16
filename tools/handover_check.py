@@ -76,6 +76,10 @@ def detect(root):
     })
     hosts = sorted(set(re.findall(r'manifestPlaceholders\["deepLinkHost[A-Za-z]*"\]\s*=\s*"([^"]+)"', app_build)))
     migrate = bool(re.search(r"^mode:\s*migrate", read(os.path.join(root, ".claude/progress.md")), re.MULTILINE))
+    # Delivery channels (CI-05..08): docs/SPEC.md "Distribution:"; projects built before v16 fall back to workflow files.
+    dist_line = re.search(r"^Distribution:\s*([^(\n]*)", read(os.path.join(root, "docs/SPEC.md")), re.MULTILINE)
+    channels = set(re.split(r"[,\s]+", dist_line.group(1).strip().lower())) - {"", "later"} if dist_line else set()
+    workflows = lambda *names: any(exists(".github/workflows/" + n) for n in names)
     features = {
         "always": True,
         # Migrate: the release updates an existing app (old key, existing Play listing, one-way data migration).
@@ -83,11 +87,17 @@ def detect(root):
         "new_app": not migrate,
         "api": exists("core/network"),
         "flavors": "productFlavors" in app_build,
-        "firebase": "google.services" in app_build or "firebase" in all_builds,
+        # a Firebase *service* (BoM / google-services); App Distribution alone is a delivery channel, not Firebase
+        "firebase": "google.services" in app_build or "libs.firebase." in all_builds,
         "crashlytics": "crashlytics" in app_build,
         "push": exists("core/notifications"),
         "remote_config": exists("core/config"),
-        "distribution": exists(".github/workflows/distribute.yml"),
+        "dist:firebase": "firebase" in channels or workflows("distribute.yml", "distribute-firebase.yml"),
+        "dist:play": bool({"play-internal", "play-release"} & channels)
+        or workflows("distribute-play-internal.yml", "release-play.yml"),
+        "dist:play-release": "play-release" in channels or workflows("release-play.yml"),
+        "dist:local": "local" in channels or exists("tools/export_build.sh"),
+        "dist:later": bool(dist_line) and not channels,
         "deeplinks": "autoVerify" in manifest or bool(hosts),
         "login": exists("feature/auth"),
         "analytics": bool(providers),
@@ -150,6 +160,9 @@ def auto_status(check, root, props):
         impl = any(re.search(r":\s*PushTokenSink\b", read(p))
                    for p in glob.glob(os.path.join(root, "core/data/**/*.kt"), recursive=True))
         return ("Done", "PushTokenSink bound in :core:data") if impl else ("To do", "no PushTokenSink implementation yet")
+    if check == "firebase_app_id":
+        app_id = props.get("firebase.stage.appId") or props.get("firebase.appId")
+        return ("Done", "app id set") if app_id else ("To do", "firebase.stage.appId / firebase.appId is empty")
     if check.startswith("key:"):
         name = check[4:]
         return ("Done", name + " is set") if props.get(name) else ("To do", name + " is empty")

@@ -20,7 +20,7 @@
    "task": "Add the signing secrets to GitHub",
    "owner": "DevOps",
    "blocker": true,
-   "why": "release.yml builds the signed AAB only when these secrets exist (HARD-07).",
+   "why": "The release workflow (release-artifact.yml or release-play.yml) and the test-build workflows sign only when these secrets exist (HARD-07).",
    "how": "GitHub → repo → Settings → Secrets and variables → Actions → New repository secret:\nKEYSTORE_BASE64 = output of: base64 -i release.jks\nKEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD",
    "verify": "Push a v* tag → the Release workflow uploads release-aab",
    "auto": null
@@ -207,14 +207,98 @@
   },
   {
    "id": "DIST-1",
-   "when": "distribution",
-   "area": "CI",
-   "task": "Set up App Distribution",
+   "when": "dist:firebase",
+   "area": "Delivery",
+   "task": "Set up Firebase App Distribution for CI",
    "owner": "DevOps",
    "blocker": false,
-   "why": "distribute.yml uploads stage builds with a service account.",
-   "how": "1. Create a service account with 'Firebase App Distribution Admin' → JSON key → GitHub secret FIREBASE_SERVICE_ACCOUNT_JSON.\n2. App Distribution → Testers & Groups → group 'testers'.",
-   "verify": "Push to main → testers get the new stage build",
+   "why": "distribute-firebase.yml uploads the stage release build to testers with a service account.",
+   "how": "1. Google Cloud console (the Firebase project) → IAM → service account with the role 'Firebase App Distribution Admin' → JSON key → GitHub secret FIREBASE_SERVICE_ACCOUNT_JSON.\n2. Firebase console → App Distribution → Testers & Groups → group 'testers' with the testers' emails.",
+   "verify": "Push to main (or run the workflow by hand) → testers get an email with the new build",
+   "auto": null
+  },
+  {
+   "id": "DIST-FB-1",
+   "when": "dist:firebase",
+   "area": "Delivery",
+   "task": "Add the Firebase app id for App Distribution",
+   "owner": "DevOps",
+   "blocker": false,
+   "why": "The upload fails with 'Missing app id' until gradle.properties has it (it is not a secret).",
+   "how": "Firebase console → Project settings → Your apps → the Android app {stage_package} (single environment: {package}) → App ID (1:…:android:…) → gradle.properties: firebase.stage.appId= (single environment: firebase.appId=).",
+   "verify": "python3 tools/handover_check.py shows this item as Done",
+   "auto": "firebase_app_id"
+  },
+  {
+   "id": "DIST-PLAY-1",
+   "when": "dist:play",
+   "area": "Delivery",
+   "task": "Upload the first AAB to Play Console by hand",
+   "owner": "Developer",
+   "blocker": true,
+   "why": "The Play Developer API can't create an app or its first release; CI uploads work only after one manual upload.",
+   "how": "Play Console → Create app ({application_id}) → Testing → Internal testing → Create release → upload the signed AAB from tools/export_build.sh --type aab (or the CI artifact).",
+   "verify": "The internal release shows the build",
+   "auto": null
+  },
+  {
+   "id": "DIST-PLAY-2",
+   "when": "dist:play",
+   "area": "Delivery",
+   "task": "Enrol in Play App Signing with the upload key",
+   "owner": "DevOps",
+   "blocker": true,
+   "why": "CI signs with the upload key (KEYSTORE_* secrets); Google re-signs with the app signing key.",
+   "how": "Play Console → Test and release → App integrity → App signing: let Google manage the app signing key; the upload key certificate must be the one in KEYSTORE_BASE64.",
+   "verify": "App integrity shows the upload key's SHA-256 = keytool -list -v -keystore <upload.jks>",
+   "auto": null
+  },
+  {
+   "id": "DIST-PLAY-3",
+   "when": "dist:play",
+   "area": "Delivery",
+   "task": "Give CI access to Play Console",
+   "owner": "DevOps",
+   "blocker": true,
+   "why": "Gradle Play Publisher authenticates with a service account (ANDROID_PUBLISHER_CREDENTIALS).",
+   "how": "1. Google Cloud console → enable 'Google Play Android Developer API' → service account → JSON key.\n2. Play Console → Users and permissions → Invite the service account's email → app {application_id} → 'Release to testing tracks' (+ 'Release to production' for promote).\n3. GitHub secret PLAY_SERVICE_ACCOUNT_JSON = the JSON key.",
+   "verify": "Run the Play workflow by hand → a new internal release appears",
+   "auto": null
+  },
+  {
+   "id": "DIST-PLAY-4",
+   "when": "dist:play-release",
+   "area": "Delivery",
+   "task": "Protect the production environment",
+   "owner": "DevOps",
+   "blocker": true,
+   "why": "promote-play.yml is the only way to production (CI-06); a required reviewer stops one person shipping alone.",
+   "how": "GitHub → Settings → Environments → New environment 'production' → Required reviewers (and Deployment branches/tags: v*). GitLab: Settings → CI/CD → Protected environments.",
+   "verify": "Running 'Promote to production' waits for an approval",
+   "auto": null
+  },
+  {
+   "id": "DIST-LOCAL-1",
+   "when": "dist:local",
+   "area": "Delivery",
+   "task": "Back up the local upload keystore",
+   "owner": "Developer",
+   "blocker": false,
+   "why": "tools/export_build.sh --create-keystore keeps the key in ~/.android-keystores and its passwords in ~/.gradle/gradle.properties — outside the repo. Losing it blocks app updates.",
+   "how": "Copy ~/.android-keystores/<project>.jks and the <project>.keystore.* lines from ~/.gradle/gradle.properties into the team's password manager. For CI, base64 it into KEYSTORE_BASE64 with the same passwords.",
+   "verify": "The backup restores and tools/export_build.sh signs with it",
+   "auto": null
+  },
+  {
+   "id": "DIST-LATER",
+   "when": "dist:later",
+   "area": "Delivery",
+   "task": "Choose how builds are delivered",
+   "owner": "Product",
+   "blocker": false,
+   "why": "Intake answer was 'Decide later': the PR gate, the dependency scan and a signed AAB artifact on v* tags run; no build reaches testers.",
+   "how": "Pick local APK/AAB, Firebase App Distribution, Google Play internal testing and/or Google Play release, then ask Claude (android-engineer Task mode) to add the channel — it renders only that channel's workflow and wiring.",
+   "verify": "docs/SPEC.md 'Distribution:' lists the channels",
    "auto": null
   },
   {
@@ -502,7 +586,7 @@
    "where": "GitHub secret",
    "flavor": "prod",
    "how": "base64 -i release.jks",
-   "read_by": ".github/workflows/release.yml"
+   "read_by": ".github/workflows/release-artifact.yml or release-play.yml (+ distribute-*.yml)"
   },
   {
    "when": "always",
@@ -568,13 +652,13 @@
    "read_by": "google-services Gradle plugin"
   },
   {
-   "when": "distribution",
+   "when": "dist:firebase",
    "name": "FIREBASE_SERVICE_ACCOUNT_JSON",
    "what": "Service account JSON (App Distribution Admin)",
    "where": "GitHub secret",
    "flavor": "stage",
    "how": "Google Cloud console → IAM → service account key",
-   "read_by": ".github/workflows/distribute.yml"
+   "read_by": ".github/workflows/distribute-firebase.yml"
   },
   {
    "when": "analytics:adjust",
@@ -620,6 +704,24 @@
    "flavor": "both",
    "how": "Segment source settings",
    "read_by": "core/analytics BuildConfig"
+  },
+  {
+   "when": "dist:firebase",
+   "name": "firebase.stage.appId / firebase.appId",
+   "what": "Firebase App ID of the app that receives test builds (not secret)",
+   "where": "gradle.properties",
+   "flavor": "stage (single env: —)",
+   "how": "Firebase console → Project settings → Your apps",
+   "read_by": "app/build.gradle.kts (firebaseAppDistribution)"
+  },
+  {
+   "when": "dist:play",
+   "name": "PLAY_SERVICE_ACCOUNT_JSON",
+   "what": "Service account JSON with Play Console release rights",
+   "where": "GitHub secret (GitLab: masked variable)",
+   "flavor": "prod",
+   "how": "Google Cloud console → service account key; invite it in Play Console",
+   "read_by": ".github/workflows/distribute-play-internal.yml, release-play.yml, promote-play.yml"
   }
  ],
  "external": [
@@ -660,7 +762,7 @@
    "ref": "PUSH-1"
   },
   {
-   "when": "distribution",
+   "when": "dist:firebase",
    "service": "Firebase App Distribution",
    "setup": "Tester group 'testers'; service account for CI",
    "ref": "DIST-1"
@@ -712,6 +814,12 @@
    "service": "Google Play Console (Android TV)",
    "setup": "Form factors → Android TV opt-in, Android TV release track, TV screenshots + banner, demo content or a test account for TV review",
    "ref": "TV-2, TV-3"
+  },
+  {
+   "when": "dist:play",
+   "service": "Google Play Console",
+   "setup": "App created, first AAB uploaded by hand, Play App Signing, service account invited with release rights",
+   "ref": "DIST-PLAY-1..3"
   }
  ],
  "verify": [
@@ -764,6 +872,16 @@
    "when": "tv",
    "check": "TV release build",
    "command": "./gradlew :app-tv:bundleProdRelease"
+  },
+  {
+   "when": "dist:local",
+   "check": "Local export",
+   "command": "tools/export_build.sh --out <folder> --type apk --install"
+  },
+  {
+   "when": "dist:play-release",
+   "check": "Play release path",
+   "command": "git tag v<x.y.z> && git push origin v<x.y.z> → internal release in Play Console; then Actions → Promote to production (staged rollout)"
   }
  ]
 }

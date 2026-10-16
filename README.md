@@ -28,8 +28,10 @@ python3 tools/check_rules.py .
 ```
 
 ## Release
-Push a `v*` tag. CI builds a signed AAB using the `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`
-and `KEY_PASSWORD` repository secrets. Locally, export the same variables plus `KEYSTORE_PATH`.
+How builds reach testers and users (local APK/AAB, Firebase App Distribution) is in
+[`docs/RELEASE.md`](docs/RELEASE.md), written by the android-engineer skill's `render_ci.py` from `docs/SPEC.md` →
+"Distribution & CI/CD". Signing secrets come only from the environment (`KEYSTORE_PATH`, `KEYSTORE_PASSWORD`,
+`KEY_ALIAS`, `KEY_PASSWORD`).
 
 ## Modules
 | Module | Purpose |

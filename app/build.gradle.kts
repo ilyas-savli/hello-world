@@ -1,6 +1,9 @@
+import com.google.firebase.appdistribution.gradle.firebaseAppDistribution // ci:firebase
+
 plugins {
     id("app.android.application")
     id("app.hilt")
+    alias(libs.plugins.firebase.appdistribution) // ci:firebase
 }
 
 /** Reads `api.<flavor>.<key>` from gradle.properties / ~/.gradle / -P (ENV-01, SEC-01). */
@@ -13,8 +16,14 @@ android {
     defaultConfig {
         // gradle.properties (rendered from APPLICATION_ID / VERSION_CODE / VERSION_NAME): Migrate keeps the old app's id.
         applicationId = providers.gradleProperty("app.applicationId").get()
-        versionCode = providers.gradleProperty("app.versionCode").get().toInt()
-        versionName = providers.gradleProperty("app.versionName").get()
+        // CI-07: CI builds pass VERSION_CODE / VERSION_NAME (tools/ci/version.sh); local builds use gradle.properties.
+        versionCode = providers.environmentVariable("VERSION_CODE")
+            .orElse(providers.gradleProperty("app.versionCode"))
+            .get()
+            .toInt()
+        versionName = providers.environmentVariable("VERSION_NAME")
+            .orElse(providers.gradleProperty("app.versionName"))
+            .get()
     }
 
     testOptions {
@@ -30,6 +39,14 @@ android {
     flavorDimensions += "environment"
     productFlavors {
         create("stage") {
+            // ci:firebase-begin — CI-05: test builds to Firebase App Distribution (render_ci.py)
+            firebaseAppDistribution {
+                appId = providers.gradleProperty("firebase.stage.appId").getOrElse("")
+                groups = "testers"
+                artifactType = "APK"
+                releaseNotesFile = providers.environmentVariable("RELEASE_NOTES_FILE").orNull
+            }
+            // ci:firebase-end
             dimension = "environment"
             applicationIdSuffix = ".stage"
             versionNameSuffix = "-stage"

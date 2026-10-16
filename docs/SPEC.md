@@ -33,6 +33,14 @@ HelloKey (start)
 | stage | com.ilyassavli.helloworld.stage | https://localhost/ | — |
 | prod | com.ilyassavli.helloworld | https://localhost/ | — |
 
+## Distribution & CI/CD
+Distribution: local, firebase
+CI: github
+Local output: apk → ~/Desktop/builds/hello-world
+Firebase testers: testers
+Triggers: test builds on push to main + manual · releases on v* tags + manual
+Verified: local APK/AAB exported, installed and launched on emulator (2026-10-16); Firebase upload from this Mac reached group testers (release 51, served APK runs on emulator); CI run: see Actions
+
 ## Integrations
 None picked. Always on: Navigation 3, Timber, LeakCanary (debug). Chucker not added (no network module).
 
