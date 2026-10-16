@@ -15,17 +15,17 @@ concurrency:
 
 jobs:
   firebase:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest becomes 26.04 in Nov 2026; bump on purpose
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # version.sh counts commits, release_notes.sh reads tags
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Version and release notes
         run: |
           bash tools/ci/version.sh 0
